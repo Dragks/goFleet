@@ -1,5 +1,6 @@
 package api
 
 type Sensor interface {
-	Read() (float64, error)
+	Read() (float32, error)
+	Identifier() (string, error)
 }
