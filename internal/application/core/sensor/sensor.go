@@ -1,6 +1,9 @@
 package sensor
 
-import "math/rand"
+import (
+	"math/rand"
+	"time"
+)
 
 type Sensor struct {
 	identifier string
@@ -13,6 +16,7 @@ func New(identifier string) *Sensor {
 
 func (sensor Sensor) Read() (float32, error) {
 	// TODO: Read actual value
+	rand.Seed(time.Now().UnixNano())
 	return rand.Float32() * 25, nil
 }
 
