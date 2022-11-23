@@ -12,7 +12,7 @@ func main() {
 	// Socket to talk to server
 	fmt.Printf("Connecting to the server...\n")
 	s, _ := zctx.NewSocket(zmq.REQ)
-	s.Connect("tcp://one:5555")
+	s.Connect("tcp://zmq:5555")
 
 	// Do 10 requests, waiting each time for a response
 	for i := 0; i < 10; i++ {
