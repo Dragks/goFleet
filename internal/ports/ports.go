@@ -8,3 +8,8 @@ type DbPort interface {
 	CloseConnection()
 	LogHistory(value float32, sensor string) error
 }
+
+type ZmqPort interface {
+	CloseConnection()
+	DoSend(value float32, sensor string) error
+}

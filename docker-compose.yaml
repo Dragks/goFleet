@@ -12,12 +12,12 @@ services:
     ports:
       - "3307:3306"
 
-  go_fleet:
-    build: .
+  zmq_router:
+    build:
+      dockerfile: Dockerfile.zmq_router
     environment:
-      DB_DRIVER: "mysql"
+      ZMQ_PORT: "5555"
       DS_NAME: "root:Admin123@tcp(db:3306)/go_fleet"
-      SENSOR_ID: "s0"
       MYSQL_HOST: "db"
       MYSQL_PASSWORD: "Admin123"
       MYSQL_DB: "go_fleet"
@@ -25,4 +25,14 @@ services:
       MYSQL_PORT: "3306"
     depends_on:
       - db
-    command: ["go", "run", "-v", "./..."]
+#    command: ["go", "run", "-v", "./..."]
+
+  sensor_zmq:
+    build:
+      dockerfile: Dockerfile.sensor_zmq
+    environment:
+      ZMQ_CONNECTION: "tcp://zmq_router:5555"
+      SENSOR_ID: "s0"
+    depends_on:
+      - zmq_router
+#    command: ["go", "run", "-v", "./..."]

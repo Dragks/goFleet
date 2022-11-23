@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"goFleet/internal/adapters"
+	"goFleet/internal/adapters/zmq"
 	"goFleet/internal/application/api"
 	"goFleet/internal/application/core/sensor"
 	"log"
@@ -13,19 +13,17 @@ func main() {
 	var err error
 	fmt.Println("application is starting...")
 
-	dbaseDriver := os.Getenv("DB_DRIVER")
-	dsourceName := os.Getenv("DS_NAME")
-
+	zmqConnection := os.Getenv("ZMQ_CONNECTION")
 	sensorId := os.Getenv("SENSOR_ID")
 
-	dbAdapter, err := db.NewAdapter(dbaseDriver, dsourceName)
+	zmqAdapter, err := zmq.NewAdapter(zmqConnection)
 	if err != nil {
 		log.Fatalf("failed to initiate dbase connection: %v", err)
 	}
-	defer dbAdapter.CloseConnection()
+	defer zmqAdapter.CloseConnection()
 
-	core := sensor.New(sensorId)
-	applicationApi := api.NewApplication(dbAdapter, core)
+	sens := sensor.New(sensorId)
+	applicationApi := api.NewZmqApplication(zmqAdapter, sens)
 
 	val, err := applicationApi.GetRead()
 	if err != nil {
