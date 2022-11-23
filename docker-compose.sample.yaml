@@ -1,0 +1,11 @@
+version: "3"
+services:
+  one:
+    build:
+      dockerfile: Dockerfile.one
+
+  two:
+    build:
+      dockerfile: Dockerfile.two
+    depends_on:
+      - one

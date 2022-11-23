@@ -1,0 +1,18 @@
+FROM golang:1.19-bullseye
+
+EXPOSE 5555
+
+RUN apt-get update \
+  && apt-get install -y \
+    libczmq-dev
+
+RUN mkdir /build
+WORKDIR /build
+COPY go.mod .
+COPY go.sum .
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=1 go build -o app cmd/sample/one.go
+
+RUN mv /build/app /usr/local/bin/
+CMD ["app"]
