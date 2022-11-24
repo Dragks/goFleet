@@ -4,62 +4,11 @@ services:
     build:
       dockerfile: Dockerfile.one
 
-  client_0:
+  client:
     build:
       dockerfile: Dockerfile.two
     depends_on:
       - zmq
-
-  client_1:
-    build:
-      dockerfile: Dockerfile.two
-    depends_on:
-      - zmq
-
-  client_2:
-    build:
-      dockerfile: Dockerfile.two
-    depends_on:
-      - zmq
-
-  client_3:
-    build:
-      dockerfile: Dockerfile.two
-    depends_on:
-      - zmq
-
-  client_4:
-    build:
-      dockerfile: Dockerfile.two
-    depends_on:
-      - zmq
-
-  client_5:
-    build:
-      dockerfile: Dockerfile.two
-    depends_on:
-      - zmq
-
-  client_6:
-    build:
-      dockerfile: Dockerfile.two
-    depends_on:
-      - zmq
-
-  client_7:
-    build:
-      dockerfile: Dockerfile.two
-    depends_on:
-      - zmq
-
-  client_8:
-    build:
-      dockerfile: Dockerfile.two
-    depends_on:
-      - zmq
-
-  client_9:
-    build:
-      dockerfile: Dockerfile.two
-    depends_on:
-      - zmq
+    deploy:
+      mode: replicated
+      replicas: 10
