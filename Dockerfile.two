@@ -1,4 +1,4 @@
-FROM golang:1.19-bullseye
+FROM golang:1.19-bullseye as builder
 
 RUN apt-get update \
   && apt-get install -y \
@@ -12,5 +12,12 @@ RUN go mod download
 COPY . .
 RUN CGO_ENABLED=1 go build -o app cmd/sample/two.go
 
-RUN mv /build/app /usr/local/bin/
+FROM debian:bullseye-slim
+
+EXPOSE 5555
+
+RUN apt-get update \
+  && apt-get install -y \
+    libczmq-dev
+COPY --from=builder /build/app /usr/local/bin/
 CMD ["app"]
