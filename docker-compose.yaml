@@ -25,7 +25,6 @@ services:
       MYSQL_PORT: "3306"
     depends_on:
       - db
-#    command: ["go", "run", "-v", "./..."]
 
   sensor_zmq:
     build:
@@ -35,4 +34,3 @@ services:
       SENSOR_ID: "s0"
     depends_on:
       - zmq_router
-#    command: ["go", "run", "-v", "./..."]
