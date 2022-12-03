@@ -14,12 +14,12 @@ func New(identifier string) *Sensor {
 	return &Sensor{identifier: identifier}
 }
 
-func (sensor Sensor) Read() (float32, error) {
-	// TODO: Read actual value
+func (sensor Sensor) ReadCurrentValue() (float32, error) {
+	// TODO: ReadCurrentValue actual value
 	rand.Seed(time.Now().UnixNano())
 	return rand.Float32() * 25, nil
 }
 
-func (sensor Sensor) Identifier() (string, error) {
+func (sensor Sensor) GetIdentifier() (string, error) {
 	return sensor.identifier, nil
 }

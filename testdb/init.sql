@@ -1,5 +1,5 @@
 CREATE TABLE read_history (
-  date DATE NOT NULL,
+  date TIMESTAMP NOT NULL,
   value FLOAT NOT NULL,
-  sensor VARCHAR(255) NOT NULL
+  address VARCHAR(255) NOT NULL
 )

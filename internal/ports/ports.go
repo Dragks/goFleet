@@ -1,15 +1,27 @@
 package ports
 
-type APIPort interface {
-	GetRead() (float32, error)
+type PubAPIPort interface {
+	ReadAndPublish() (float32, error)
+}
+
+type SubAPIPort interface {
+	SubscribeAndSave() (float32, error)
 }
 
 type DbPort interface {
-	CloseConnection()
-	LogHistory(value float32, sensor string) error
+	Close()
+	LogHistory(value float32, address string) error
 }
 
 type ZmqPort interface {
-	CloseConnection()
-	DoSend(value float32, sensor string) error
+	Close()
+}
+
+type ZmqPubPort interface {
+	ZmqPort
+	Publish(value float32, sensorId, topic string) error
+}
+type ZmqSubPort interface {
+	ZmqPort
+	Receive() (string, string, error)
 }

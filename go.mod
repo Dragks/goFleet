@@ -5,7 +5,7 @@ go 1.19
 require (
 	github.com/Masterminds/squirrel v1.5.3
 	github.com/go-sql-driver/mysql v1.6.0
-	github.com/zeromq/goczmq v4.1.0+incompatible
+	github.com/pebbe/zmq4 v1.2.9
 )
 
 require (

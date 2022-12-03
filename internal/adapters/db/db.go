@@ -30,16 +30,13 @@ func NewAdapter(driverName, dataSourceName string) (*Adapter, error) {
 	return &Adapter{db: db}, nil
 }
 
-func (dbAdapter Adapter) CloseConnection() {
-	err := dbAdapter.db.Close()
-	if err != nil {
-		log.Fatalf("db close failure: %v", err)
-	}
+func (dbAdapter Adapter) Close() {
+	_ = dbAdapter.db.Close()
 }
 
-func (dbAdapter Adapter) LogHistory(value float32, sensor string) error {
-	queryString, args, err := sq.Insert("read_history").Columns("date", "value", "sensor").
-		Values(time.Now(), value, sensor).ToSql()
+func (dbAdapter Adapter) LogHistory(value float32, address string) error {
+	queryString, args, err := sq.Insert("read_history").Columns("date", "value", "address").
+		Values(time.Now(), value, address).ToSql()
 	if err != nil {
 		return err
 	}

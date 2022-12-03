@@ -1,7 +1,7 @@
 package main
 
 import (
-	"fmt"
+	"log"
 
 	zmq "github.com/pebbe/zmq4"
 )
@@ -10,16 +10,22 @@ func main() {
 	zctx, _ := zmq.NewContext()
 
 	// Socket to talk to server
-	fmt.Printf("Connecting to the server...\n")
+	log.Printf("Connecting to the server...\n")
 	s, _ := zctx.NewSocket(zmq.REQ)
-	s.Connect("tcp://zmq:5555")
+	err := s.Connect("tcp://zmq:5555")
+	if err != nil {
+		return
+	}
 
 	// Do 10 requests, waiting each time for a response
 	for i := 0; i < 10; i++ {
-		fmt.Printf("Sending request %d...\n", i)
-		s.Send("Hello", 0)
+		log.Printf("Sending request %d...\n", i)
+		_, err := s.Send("Hello", 0)
+		if err != nil {
+			return
+		}
 
 		msg, _ := s.Recv(0)
-		fmt.Printf("Received reply %d [ %s ]\n", i, msg)
+		log.Printf("Received reply %d [ %s ]\n", i, msg)
 	}
 }

@@ -2,26 +2,82 @@ package zmq
 
 import (
 	"fmt"
-	"github.com/zeromq/goczmq"
+	zmq "github.com/pebbe/zmq4"
 	"log"
 )
 
 type Adapter struct {
-	dealer *goczmq.Sock
+	sock *zmq.Socket
 }
 
-func (zmqAdapter Adapter) CloseConnection() {
-	zmqAdapter.dealer.Destroy()
+type PubAdapter struct {
+	Adapter
 }
 
-func NewAdapter(connection string) (*Adapter, error) {
-	dealer, err := goczmq.NewDealer(connection)
+type SubAdapter struct {
+	Adapter
+	topic string
+}
+
+func (adapter Adapter) Close() {
+	_ = adapter.sock.Close()
+}
+
+func NewPubAdapter(endpoint string) (*PubAdapter, error) {
+	var err error
+
+	publisher, err := zmq.NewSocket(zmq.PUB)
 	if err != nil {
-		log.Fatalf("failed to create zeromq dealer: %v", err)
+		return nil, err
 	}
-	return &Adapter{dealer: dealer}, nil
+
+	err = publisher.Bind(endpoint) // i.e. "tcp://*:5563"
+	if err != nil {
+		return nil, err
+	}
+
+	return &PubAdapter{Adapter: Adapter{sock: publisher}}, nil
 }
 
-func (zmqAdapter Adapter) DoSend(value float32, sensor string) error {
-	return zmqAdapter.dealer.SendFrame([]byte(fmt.Sprintf("%f", value)), goczmq.FlagNone)
+func NewSubAdapter(connection, topic string) (*SubAdapter, error) {
+	var err error
+
+	subscriber, err := zmq.NewSocket(zmq.SUB)
+	if err != nil {
+		return nil, err
+	}
+	err = subscriber.Connect(connection) // i.e. "tcp://localhost:5563"
+	if err != nil {
+		return nil, err
+	}
+	err = subscriber.SetSubscribe(topic)
+	if err != nil {
+		return nil, err
+	}
+
+	return &SubAdapter{topic: topic, Adapter: Adapter{sock: subscriber}}, nil
+}
+
+func (pubAdapter PubAdapter) Publish(value float32, sensorId, topic string) error {
+	_, err := pubAdapter.sock.Send(topic, zmq.SNDMORE)
+	_, err = pubAdapter.sock.Send(fmt.Sprintf("%f", value), 0)
+	log.Printf("publisher sent '%f' on topic '%s' with sensor '%s'", value, topic, sensorId)
+	return err
+}
+
+func (subAdapter SubAdapter) Receive() (string, string, error) {
+	var err error
+
+	//  Read envelope with address
+	address, err := subAdapter.sock.Recv(0)
+	if err != nil {
+		return "", "", err
+	}
+	//  Read message contents
+	content, err := subAdapter.sock.Recv(0)
+	if err != nil {
+		return "", "", err
+	}
+	log.Printf("subscriber received '%s' from '%s' on topic '%s'", content, address, subAdapter.topic)
+	return address, content, nil
 }
