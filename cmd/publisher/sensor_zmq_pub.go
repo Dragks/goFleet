@@ -35,10 +35,6 @@ func exec() {
 	if err != nil {
 		log.Fatalf("failed to get environment variable: %v", err)
 	}
-	sensorId, err := env("SENSOR_ID")
-	if err != nil {
-		log.Fatalf("failed to get environment variable: %v", err)
-	}
 
 	zmqPubAdapter, err := zmq.NewPubAdapter(zmqPubEndpoint)
 	if err != nil {
@@ -46,7 +42,7 @@ func exec() {
 	}
 	defer zmqPubAdapter.Close()
 
-	sens := sensor.New(sensorId)
+	sens, _ := sensor.NewMock()
 	application := api.NewPubApplication(zmqPubAdapter, sens, topic)
 
 	for {

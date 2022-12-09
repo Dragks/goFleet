@@ -21,7 +21,6 @@ services:
     environment:
       ZMQ_PUB_ENDPOINT: "tcp://*:5555"
       TOPIC: "sensor"
-      SENSOR_ID: "s0"
     links:
       - fluentd
     logging:
