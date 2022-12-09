@@ -2,6 +2,7 @@ package api
 
 import (
 	"goFleet/internal/ports"
+	"log"
 )
 
 type PubApplication struct {
@@ -14,22 +15,23 @@ func NewPubApplication(zmqPub ports.ZmqPubPort, sensor Sensor, topic string) *Pu
 	return &PubApplication{zmqPubPort: zmqPub, sensor: sensor, topic: topic}
 }
 
-func (app PubApplication) ReadAndPublish() (float32, error) {
+func (app PubApplication) ReadAndPublish() error {
 	val, err := app.sensor.ReadCurrentValue()
 	if err != nil {
-		return 0, err
+		return err
 	}
+	log.Printf("got sensor read with value: %f\n", val)
 
 	identifier, err := app.sensor.GetIdentifier()
 	if err != nil {
-		return 0, err
+		return err
 	}
 
 	if app.zmqPubPort != nil {
 		err = app.zmqPubPort.Publish(val, identifier, app.topic)
 		if err != nil {
-			return 0, err
+			return err
 		}
 	}
-	return val, nil
+	return nil
 }

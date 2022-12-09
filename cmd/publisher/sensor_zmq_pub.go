@@ -50,11 +50,10 @@ func exec() {
 	application := api.NewPubApplication(zmqPubAdapter, sens, topic)
 
 	for {
-		val, err := application.ReadAndPublish()
+		err := application.ReadAndPublish()
 		if err != nil {
 			log.Printf("failed to get sensor read: %v", err)
 		}
-		log.Printf("got sensor read with value: %v\n", val)
 		time.Sleep(time.Second)
 	}
 }

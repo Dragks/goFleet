@@ -1,7 +1,7 @@
 package ports
 
 type PubAPIPort interface {
-	ReadAndPublish() (float32, error)
+	ReadAndPublish() error
 }
 
 type SubAPIPort interface {
