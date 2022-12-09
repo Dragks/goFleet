@@ -5,12 +5,7 @@ type PubAPIPort interface {
 }
 
 type SubAPIPort interface {
-	SubscribeAndSave() (float32, error)
-}
-
-type DbPort interface {
-	Close()
-	LogHistory(value float32, address string) error
+	ReceiveAndHandle() error
 }
 
 type ZmqPort interface {
@@ -24,4 +19,8 @@ type ZmqPubPort interface {
 type ZmqSubPort interface {
 	ZmqPort
 	Receive() (string, string, error)
+}
+type SubscriptionHandler interface {
+	Close()
+	HandleResult(string, string) error
 }

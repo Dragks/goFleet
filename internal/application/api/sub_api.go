@@ -1,33 +1,57 @@
 package api
 
 import (
+	"fmt"
 	"goFleet/internal/ports"
-	"strconv"
+	"log"
+	"net"
 )
 
 type SubApplication struct {
-	db     ports.DbPort
-	zmqSub ports.ZmqSubPort
+	zmqSub              ports.ZmqSubPort
+	subscriptionHandler ports.SubscriptionHandler
 }
 
-func NewSubApplication(zmqSub ports.ZmqSubPort, db ports.DbPort) *SubApplication {
-	return &SubApplication{db: db, zmqSub: zmqSub}
+type UDPWriter struct {
+	connection net.Conn
 }
 
-func (app SubApplication) SubscribeAndSave() (float32, error) {
+func NewSubApplication(zmqSub ports.ZmqSubPort, subscriptionHandler ports.SubscriptionHandler) *SubApplication {
+	return &SubApplication{subscriptionHandler: subscriptionHandler, zmqSub: zmqSub}
+}
+
+func NewUDPWriter(endpoint string) (*UDPWriter, error) {
+	conn, err := net.Dial("udp", endpoint)
+	if err != nil {
+		return nil, err
+	}
+	return &UDPWriter{connection: conn}, nil
+}
+
+func (writer UDPWriter) HandleResult(address, content string) error {
+	_, err := writer.connection.Write([]byte(fmt.Sprintf("%s:%s", address, content)))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (writer UDPWriter) Close() {
+	_ = writer.connection.Close()
+}
+
+func (app SubApplication) ReceiveAndHandle() error {
 	var err error
 	address, content, err := app.zmqSub.Receive()
 	if err != nil {
-		return 0, err
+		return err
 	}
+	log.Printf("received %s on %s\n", content, address)
 
-	parse, err := strconv.ParseFloat(content, 32)
-	value := float32(parse)
-
-	err = app.db.LogHistory(value, address)
+	err = app.subscriptionHandler.HandleResult(address, content)
 	if err != nil {
-		return value, err
+		return err
 	}
 
-	return value, nil
+	return nil
 }

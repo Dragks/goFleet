@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"goFleet/internal/adapters/db"
 	"goFleet/internal/adapters/zmq"
 	"goFleet/internal/application/api"
 	"log"
@@ -49,28 +48,22 @@ func exec() {
 	}
 	defer zmqSubAdapter.Close()
 
-	dbaseDriver, err := env("DB_DRIVER")
+	saveEndpointUDP, err := env("SAVE_ENDPOINT_UDP")
 	if err != nil {
 		log.Fatalf("failed to get environment variable: %v", err)
 	}
-	dsourceName, err := env("DS_NAME")
+	subscriptionHandler, err := api.NewUDPWriter(saveEndpointUDP)
 	if err != nil {
-		log.Fatalf("failed to get environment variable: %v", err)
+		log.Fatalf("failed to create adapter: %v", err)
 	}
+	defer subscriptionHandler.Close()
 
-	dbAdapter, err := db.NewAdapter(dbaseDriver, dsourceName)
-	if err != nil {
-		log.Fatalf("failed to initiate dbase connection: %v", err)
-	}
-	defer dbAdapter.Close()
-
-	application := api.NewSubApplication(zmqSubAdapter, dbAdapter)
+	application := api.NewSubApplication(zmqSubAdapter, subscriptionHandler)
 
 	for {
-		val, err := application.SubscribeAndSave()
+		err := application.ReceiveAndHandle()
 		if err != nil {
 			log.Fatalf("failed to get sensor read: %v", err)
 		}
-		log.Printf("got sensor read with value: %v\n", val)
 	}
 }

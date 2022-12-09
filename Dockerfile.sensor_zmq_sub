@@ -18,11 +18,7 @@ EXPOSE 5555
 
 RUN apt-get update \
   && apt-get install -y \
-    libczmq-dev \
-    default-mysql-client
+    libczmq-dev
 
-COPY entrypoint.sh /usr/local/bin/entrypoint.sh
-RUN /bin/chmod +x /usr/local/bin/entrypoint.sh
 COPY --from=builder /build/app /usr/local/bin/
 CMD ["app"]
-ENTRYPOINT ["entrypoint.sh"]

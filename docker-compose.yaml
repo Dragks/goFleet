@@ -1,33 +1,19 @@
 version: "3"
 services:
-  db:
-    image: mysql
-    command: --default-authentication-plugin=mysql_native_password
-    restart: always
-    environment: 
-      MYSQL_ROOT_PASSWORD: "Admin123"
-      MYSQL_DATABASE: "go_fleet"
-    volumes: 
-      - ./testdb:/docker-entrypoint-initdb.d
-    ports:
-      - "3307:3306"
-
   sensor_zmq_sub:
     build:
       dockerfile: Dockerfile.sensor_zmq_sub
     environment:
       ZMQ_SUB_ENDPOINT: "tcp://sensor_zmq_pub:5555"
+      SAVE_ENDPOINT_UDP: "fluentd:20001"
       TOPIC: "sensor"
-      DB_DRIVER: "mysql"
-      DS_NAME: "root:Admin123@tcp(db:3306)/go_fleet"
-      MYSQL_HOST: "db"
-      MYSQL_PASSWORD: "Admin123"
-      MYSQL_DB: "go_fleet"
-      MYSQL_USER: "root"
-      MYSQL_PORT: "3306"
-    depends_on:
-      - db
+    links:
       - sensor_zmq_pub
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: host.docker.internal:24224
 
   sensor_zmq_pub:
     build:
@@ -36,3 +22,37 @@ services:
       ZMQ_PUB_ENDPOINT: "tcp://*:5555"
       TOPIC: "sensor"
       SENSOR_ID: "s0"
+    links:
+      - fluentd
+    logging:
+      driver: "fluentd"
+      options:
+        fluentd-address: host.docker.internal:24224
+
+  fluentd:
+    build: ./fluentd
+    volumes:
+      - ./fluentd/conf:/fluentd/etc
+    links:
+      - elasticsearch
+    ports:
+      - "24224:24224"
+      - "24224:24224/udp"
+      - "20001:20001/udp" # sensor-data udp
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1
+    container_name: elasticsearch
+    environment:
+      - "discovery.type=single-node"
+    expose:
+      - "9200"
+    ports:
+      - "9200:9200"
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:7.13.1
+    links:
+      - elasticsearch
+    ports:
+      - "5601:5601"
