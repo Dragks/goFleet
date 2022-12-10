@@ -9,14 +9,14 @@ import (
 
 type SubApplication struct {
 	zmqSub              ports.ZmqSubPort
-	subscriptionHandler ports.SubscriptionHandler
+	subscriptionHandler SubscriptionHandler
 }
 
 type UDPWriter struct {
 	connection net.Conn
 }
 
-func NewSubApplication(zmqSub ports.ZmqSubPort, subscriptionHandler ports.SubscriptionHandler) *SubApplication {
+func NewSubApplication(zmqSub ports.ZmqSubPort, subscriptionHandler SubscriptionHandler) *SubApplication {
 	return &SubApplication{subscriptionHandler: subscriptionHandler, zmqSub: zmqSub}
 }
 

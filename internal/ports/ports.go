@@ -20,7 +20,3 @@ type ZmqSubPort interface {
 	ZmqPort
 	Receive() (string, string, error)
 }
-type SubscriptionHandler interface {
-	Close()
-	HandleResult(string, string) error
-}
