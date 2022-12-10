@@ -25,8 +25,6 @@ func main() {
 }
 
 func exec() {
-	var err error
-
 	zmqPubEndpoint, err := env("ZMQ_PUB_ENDPOINT")
 	if err != nil {
 		log.Fatalf("failed to get environment variable: %v", err)

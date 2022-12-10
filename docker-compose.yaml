@@ -5,7 +5,7 @@ services:
       dockerfile: Dockerfile.sensor_zmq_sub
     environment:
       ZMQ_SUB_ENDPOINT: "tcp://sensor_zmq_pub:5555"
-      SAVE_ENDPOINT_UDP: "fluentd:20001"
+      SAVE_ENDPOINT: "tcp://fluentd:20001"
       TOPIC: "sensor"
     links:
       - sensor_zmq_pub
@@ -37,7 +37,7 @@ services:
     ports:
       - "24224:24224"
       - "24224:24224/udp"
-      - "20001:20001/udp" # sensor-data udp
+      - "20001:20001/tcp" # sensor-data tcp
 
   elasticsearch:
     image: docker.elastic.co/elasticsearch/elasticsearch:7.13.1

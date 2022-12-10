@@ -31,8 +31,6 @@ func env(name string) (string, error) {
 }
 
 func exec() {
-	var err error
-
 	zmqSubEndpoint, err := env("ZMQ_SUB_ENDPOINT")
 	if err != nil {
 		log.Fatalf("failed to get environment variable: %v", err)
@@ -48,13 +46,13 @@ func exec() {
 	}
 	defer zmqSubAdapter.Close()
 
-	saveEndpointUDP, err := env("SAVE_ENDPOINT_UDP")
+	saveEndpoint, err := env("SAVE_ENDPOINT")
 	if err != nil {
 		log.Fatalf("failed to get environment variable: %v", err)
 	}
-	subscriptionHandler, err := api.NewUDPWriter(saveEndpointUDP)
+	subscriptionHandler, err := api.NewEndpointWriter(saveEndpoint)
 	if err != nil {
-		log.Fatalf("failed to create adapter: %v", err)
+		log.Fatalf("failed to create subscription handler: %v", err)
 	}
 	defer subscriptionHandler.Close()
 
@@ -63,7 +61,7 @@ func exec() {
 	for {
 		err := application.ReceiveAndHandle()
 		if err != nil {
-			log.Fatalf("failed to get sensor read: %v", err)
+			log.Fatalf("failed to receive or handle: %v", err)
 		}
 	}
 }

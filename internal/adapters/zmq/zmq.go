@@ -24,8 +24,6 @@ func (adapter Adapter) Close() {
 }
 
 func NewPubAdapter(endpoint string) (*PubAdapter, error) {
-	var err error
-
 	publisher, err := zmq.NewSocket(zmq.PUB)
 	if err != nil {
 		return nil, err
@@ -40,8 +38,6 @@ func NewPubAdapter(endpoint string) (*PubAdapter, error) {
 }
 
 func NewSubAdapter(connection, topic string) (*SubAdapter, error) {
-	var err error
-
 	subscriber, err := zmq.NewSocket(zmq.SUB)
 	if err != nil {
 		return nil, err
@@ -60,14 +56,18 @@ func NewSubAdapter(connection, topic string) (*SubAdapter, error) {
 
 func (pubAdapter PubAdapter) Publish(value float32, sensorId, topic string) error {
 	_, err := pubAdapter.sock.Send(topic, zmq.SNDMORE)
+	if err != nil {
+		return err
+	}
 	_, err = pubAdapter.sock.Send(fmt.Sprintf("%f", value), 0)
+	if err != nil {
+		return err
+	}
 	log.Printf("publisher sent '%f' on topic '%s' with sensor '%s'", value, topic, sensorId)
 	return err
 }
 
 func (subAdapter SubAdapter) Receive() (string, string, error) {
-	var err error
-
 	//  Read envelope with address
 	address, err := subAdapter.sock.Recv(0)
 	if err != nil {
