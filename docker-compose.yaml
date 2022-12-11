@@ -8,12 +8,11 @@ services:
       SAVE_ENDPOINT: "tcp://fluentd:20001"
       TOPIC: "sensor"
     links:
-      - sensor_zmq_pub
-      - fluentd
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: host.docker.internal:24224
+      - "sensor_zmq_pub"
+      - "fluentd"
+    depends_on:
+      - "sensor_zmq_pub"
+      - "fluentd"
 
   sensor_zmq_pub:
     build:
@@ -21,12 +20,8 @@ services:
     environment:
       ZMQ_PUB_ENDPOINT: "tcp://*:5555"
       TOPIC: "sensor"
-    links:
-      - fluentd
-    logging:
-      driver: "fluentd"
-      options:
-        fluentd-address: host.docker.internal:24224
+    expose:
+      - "5555"
 
   fluentd:
     build: ./fluentd
@@ -34,9 +29,9 @@ services:
       - ./fluentd/conf:/fluentd/etc
     links:
       - elasticsearch
+    expose:
+      - "20001"
     ports:
-      - "24224:24224"
-      - "24224:24224/udp"
       - "20001:20001/tcp" # sensor-data tcp
 
   elasticsearch:
@@ -53,5 +48,7 @@ services:
     image: docker.elastic.co/kibana/kibana:7.13.1
     links:
       - elasticsearch
+    expose:
+      - "5601"
     ports:
       - "5601:5601"
