@@ -1,8 +1,8 @@
 version: "3"
 services:
   sensor_zmq_sub:
-    build:
-      dockerfile: Dockerfile.sensor_zmq_sub
+    image: ghcr.io/dragks/gofleet/sensor_zmq_sub:v0.1.0
+    container_name: sensor_zmq_sub
     environment:
       ZMQ_SUB_ENDPOINT: "tcp://sensor_zmq_pub:5555"
       SAVE_ENDPOINT: "tcp://fluentd:20001"
@@ -15,8 +15,8 @@ services:
       - "fluentd"
 
   sensor_zmq_pub:
-    build:
-      dockerfile: Dockerfile.sensor_zmq_pub
+    image: ghcr.io/dragks/gofleet/sensor_zmq_pub:v0.1.0
+    container_name: sensor_zmq_pub
     environment:
       ZMQ_PUB_ENDPOINT: "tcp://*:5555"
       TOPIC: "sensor"
