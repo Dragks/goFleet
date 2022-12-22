@@ -1,0 +1,112 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentd-conf
+  labels:
+    app: fluentd
+data:
+  elasticsearch-host: quickstart-es-http
+  elasticsearch-port: "9200"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluentconf
+  labels:
+    app: fluentd
+data:
+  fluent.conf: |
+    <source>
+      @type tcp
+      tag sensor-data # required
+      <parse>
+        @type regexp
+        expression /^(?<topic>\w+):(?<value>\d+\.\d+)$/
+        types topic:string
+        types value:float
+      </parse>
+      port 5170   # optional. 5170 by default
+      bind 0.0.0.0 # optional. 0.0.0.0 by default
+      delimiter "\n" # optional. "\n" (newline) by default
+    </source>
+
+    <match *.**>
+      @type copy
+
+      <store>
+        @type elasticsearch
+        host "#{ENV['ELASTICSEARCH_HOST']}"
+        port "#{ENV['ELASTICSEARCH_PORT']}"
+        logstash_format true
+        logstash_prefix fluentd
+        logstash_dateformat %Y%m%d
+        include_tag_key true
+        type_name access_log
+        tag_key @log_name
+        flush_interval 1s
+      </store>
+
+      <store>
+        @type stdout
+      </store>
+    </match>
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: fluentd-svc
+  labels:
+    app: fluentd
+spec:
+  ports:
+    - port: 5170
+      protocol: TCP
+      targetPort: 5170
+  selector:
+    app: fluentd
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fluentd
+  labels:
+    app: fluentd
+spec:
+  selector:
+    matchLabels:
+      app: fluentd
+  template:
+    metadata:
+      labels:
+        app: fluentd
+    spec:
+      containers:
+        - name: fluentd
+          image: fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
+          env:
+            - name: ELASTICSEARCH_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: fluentd-conf
+                  key: elasticsearch-host
+            - name: ELASTICSEARCH_PORT
+              valueFrom:
+                configMapKeyRef:
+                  name: fluentd-conf
+                  key: elasticsearch-port
+          resources:
+            limits:
+              memory: 200Mi
+            requests:
+              cpu: 100m
+              memory: 200Mi
+          volumeMounts:
+            - name: fluentconf
+              mountPath: /fluentd/etc/
+          ports:
+            - containerPort: 5170
+      terminationGracePeriodSeconds: 30
+      volumes:
+        - name: fluentconf
+          configMap:
+            name: fluentconf
