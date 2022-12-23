@@ -5,8 +5,8 @@ metadata:
   labels:
     app: fluentd
 data:
-  elasticsearch-host: "quickstart-es-internal-http"
-  elasticsearch-port: "9200"
+  elasticsearch-host: {{ .Values.elasticsearchHost }}
+  elasticsearch-port: "{{ .Values.elasticsearchPort }}"
 ---
 apiVersion: v1
 kind: ConfigMap
@@ -37,6 +37,27 @@ data:
         @type stdout
       </store>
     </match>
+
+    <match *.**>
+      @type copy
+
+      <store>
+        @type elasticsearch
+        host "#{ENV['ELASTICSEARCH_HOST']}"
+        port "#{ENV['ELASTICSEARCH_PORT']}"
+        user "#{ENV['ELASTICSEARCH_USER_NAME']}"
+        password "#{ENV['ELASTICSEARCH_USER_PASS']}"
+        logstash_format true
+        logstash_prefix fluentd
+        logstash_dateformat %Y%m%d
+        include_tag_key true
+        type_name access_log
+        tag_key @log_name
+        flush_interval 1s
+        scheme https
+        ssl_verify false
+      </store>
+    </match>
 ---
 apiVersion: v1
 kind: Service
@@ -46,7 +67,7 @@ metadata:
     app: fluentd
 spec:
   ports:
-    - port: {{ .Values.fluentdPort}}
+    - port: {{ .Values.fluentdPort }}
       protocol: TCP
       targetPort: 5170
   selector:
@@ -71,6 +92,13 @@ spec:
         - name: fluentd
           image: fluent/fluentd-kubernetes-daemonset:v1-debian-elasticsearch
           env:
+            - name: ELASTICSEARCH_USER_NAME
+              value: "elastic"
+            - name: ELASTICSEARCH_USER_PASS
+              valueFrom:
+                secretKeyRef:
+                  name: quickstart-es-elastic-user
+                  key: elastic
             - name: ELASTICSEARCH_HOST
               valueFrom:
                 configMapKeyRef:

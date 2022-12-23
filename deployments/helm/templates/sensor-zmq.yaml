@@ -5,8 +5,8 @@ metadata:
   labels:
     app: sensor-zmq
 data:
-  fluentd-host: {{ .Values.fluentdHost}}
-  topic: {{ .Values.topicName}}
+  fluentd-host: {{ .Values.fluentdHost }}
+  topic: {{ .Values.topicName }}
   zmq-pub-endpoint: {{ .Values.zmqPubEndpoint }}
   zmq-sub-endpoint: {{ .Values.zmqSubEndpoint }}
 ---

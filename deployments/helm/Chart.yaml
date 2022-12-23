@@ -1,5 +1,23 @@
-apiVersion: v2
-name: go-fleet
+apiVersion: v2 # The chart API version (required)
+name: go-fleet # The name of the chart (required)
+version: 0.2.1 # A SemVer 2 version (required)
+# kubeVersion: A SemVer range of compatible Kubernetes versions (optional)
 description: goFleet applications with zeromq pub/sub and fluentd
-version: 0.2.0
-appVersion: 0.2.0
+type: application # The type of the chart (optional)
+keywords: # A list of keywords about this project (optional)
+  - zeromq
+  - fluentd
+  - go
+# home: The URL of this projects home page (optional)
+sources: # A list of URLs to source code for this project (optional)
+  - https://github.com/Dragks/goFleet
+# dependencies: A list of the chart requirements (optional)
+maintainers: # (optional)
+  - name: Marco Wennesz # The maintainers name (required for each maintainer)
+    email: marco.wennesz@student.uni-kassel.de # The maintainers email (optional for each maintainer)
+    url: https://github.com/Dragks # A URL for the maintainer (optional for each maintainer)
+# icon: A URL to an SVG or PNG image to be used as an icon (optional).
+appVersion: 0.2.1 # The version of the app that this contains (optional). Needn't be SemVer. Quotes recommended.
+deprecated: false # Whether this chart is deprecated (optional, boolean)
+# annotations:
+#   example: A list of annotations keyed by name (optional).
