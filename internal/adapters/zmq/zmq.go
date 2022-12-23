@@ -24,6 +24,7 @@ func (adapter Adapter) Close() {
 }
 
 func NewPubAdapter(endpoint string) (*PubAdapter, error) {
+	log.Printf("Build socket to publish")
 	publisher, err := zmq.NewSocket(zmq.PUB)
 	if err != nil {
 		return nil, err
@@ -34,14 +35,17 @@ func NewPubAdapter(endpoint string) (*PubAdapter, error) {
 		return nil, err
 	}
 
+	log.Printf("Successfully built publisher socket: %s", endpoint)
 	return &PubAdapter{Adapter: Adapter{sock: publisher}}, nil
 }
 
 func NewSubAdapter(connection, topic string) (*SubAdapter, error) {
+	log.Printf("Build socket for subscription")
 	subscriber, err := zmq.NewSocket(zmq.SUB)
 	if err != nil {
 		return nil, err
 	}
+	log.Printf("Connecting socket for subscription")
 	err = subscriber.Connect(connection) // i.e. "tcp://localhost:5563"
 	if err != nil {
 		return nil, err
@@ -51,10 +55,12 @@ func NewSubAdapter(connection, topic string) (*SubAdapter, error) {
 		return nil, err
 	}
 
+	log.Printf("Sucessfully built subscriber socket '%s' for topic '%s'", connection, topic)
 	return &SubAdapter{topic: topic, Adapter: Adapter{sock: subscriber}}, nil
 }
 
 func (pubAdapter PubAdapter) Publish(value float32, sensorId, topic string) error {
+	log.Printf("Publish next message to all subscribers")
 	_, err := pubAdapter.sock.Send(topic, zmq.SNDMORE)
 	if err != nil {
 		return err
@@ -68,11 +74,13 @@ func (pubAdapter PubAdapter) Publish(value float32, sensorId, topic string) erro
 }
 
 func (subAdapter SubAdapter) Receive() (string, string, error) {
+	log.Printf("Receive next message from subscription")
 	//  Read envelope with address
 	address, err := subAdapter.sock.Recv(0)
 	if err != nil {
 		return "", "", err
 	}
+	log.Printf("Received address '%s' from subscription", address)
 	//  Read message contents
 	content, err := subAdapter.sock.Recv(0)
 	if err != nil {
