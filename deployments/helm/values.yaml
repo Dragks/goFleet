@@ -1,4 +1,6 @@
 fluentdHost: "tcp://fluentd-svc:5170"
+fluentdPort: "5170"
+fluentdServiceName: "fluentd-svc"
 topicName: "sensor"
 zmqPubEndpoint: "tcp://*:5555"
 zmqSubEndpoint: "tcp://sensor-zmq-pub-svc:5555"
