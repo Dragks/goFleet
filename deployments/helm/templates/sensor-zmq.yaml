@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sensor-zmq-config
+  labels:
+    app: sensor-zmq
+data:
+  fluentd-host: {{ .Values.fluentdHost}}
+  topic: {{ .Values.topicName}}
+  zmq-pub-endpoint: {{ .Values.zmqPubEndpoint }}
+  zmq-sub-endpoint: {{ .Values.zmqSubEndpoint }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sensor-zmq-pub
+  labels:
+    app: sensor-zmq-pub
+spec:
+  selector:
+    matchLabels:
+      app: sensor-zmq-pub
+  template:
+    metadata:
+      labels:
+        app: sensor-zmq-pub
+    spec:
+      containers:
+        - name: sensor-zmq-pub
+          image: ghcr.io/dragks/gofleet/sensor_zmq_pub:v0.2.1
+          env:
+            - name: ZMQ_PUB_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  key: zmq-pub-endpoint
+                  name: sensor-zmq-config
+            - name: TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  name: sensor-zmq-config
+                  key: topic
+          ports:
+            - containerPort: 5555
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: sensor-zmq-sub
+  labels:
+    app: sensor-zmq-sub
+spec:
+  selector:
+    matchLabels:
+      app: sensor-zmq-sub
+  template:
+    metadata:
+      labels:
+        app: sensor-zmq-sub
+    spec:
+      containers:
+        - name: sensor-zmq-sub
+          image: ghcr.io/dragks/gofleet/sensor_zmq_sub:v0.2.1
+          env:
+            - name: ZMQ_SUB_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  key: zmq-sub-endpoint
+                  name: sensor-zmq-config
+            - name: SAVE_ENDPOINT
+              valueFrom:
+                configMapKeyRef:
+                  name: sensor-zmq-config
+                  key: fluentd-host
+            - name: TOPIC
+              valueFrom:
+                configMapKeyRef:
+                  name: sensor-zmq-config
+                  key: topic
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.pubServiceName }}
+  labels:
+    app: sensor-zmq-pub
+spec:
+  ports:
+    - port: {{ .Values.pubServicePort }}
+      protocol: TCP
+      targetPort: 5555
+  selector:
+    app: sensor-zmq-pub

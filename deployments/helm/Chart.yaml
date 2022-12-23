@@ -1,0 +1,5 @@
+apiVersion: v2
+name: go-fleet
+description: goFleet applications with zeromq pub/sub and fluentd
+version: 0.2.0
+appVersion: 0.2.0
