@@ -34,14 +34,6 @@ data:
       @type copy
 
       <store>
-        @type stdout
-      </store>
-    </match>
-
-    <match *.**>
-      @type copy
-
-      <store>
         @type elasticsearch
         host "#{ENV['ELASTICSEARCH_HOST']}"
         port "#{ENV['ELASTICSEARCH_PORT']}"
@@ -56,6 +48,10 @@ data:
         flush_interval 1s
         scheme https
         ssl_verify false
+      </store>
+
+      <store>
+        @type stdout
       </store>
     </match>
 ---
