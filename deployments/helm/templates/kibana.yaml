@@ -7,3 +7,18 @@ spec:
   count: 1
   elasticsearchRef:
     name: quickstart
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: kibana
+  labels:
+    component: kibana
+spec:
+  type: LoadBalancer # TODO: Change to Ingress
+  selector:
+    common.k8s.elastic.co/type: kibana
+    kibana.k8s.elastic.co/name: quickstart
+  ports:
+    - port: 5601
+      targetPort: 5601
